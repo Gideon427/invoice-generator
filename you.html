@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swiftship-Cargo Fatura</title>
+<style>
+  :root {
+    --primary: #0a4b8c;
+    --primary-dark: #063366;
+    --light-bg: #f4f8fc;
+    --border: #b0c4de;
+    --text: #1b2430;
+    --muted: #5a6b7c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #e2e8f0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--text);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 20px;
+    max-width: 210mm;
+    margin: 0 auto;
+  }
+  .btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn.primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .btn.primary:hover { background: var(--primary-dark); }
+
+  /* ---------- Sheet ---------- */
+  .sheet {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 40px;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    position: relative;
+    overflow: hidden;
+    padding: 15mm 18mm 20mm 18mm;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Header ---------- */
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .logo-placeholder {
+    width: 80px;
+    height: 80px;
+    border: 2px dashed var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    overflow: hidden;
+  }
+  .logo-placeholder img { width: 100%; height: 100%; object-fit: contain; }
+  .company-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+  }
+  .company-sub {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--primary);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .header-slogan {
+    text-align: right;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.3;
+    max-width: 150px;
+  }
+
+  /* ---------- Title Bar ---------- */
+  .title-bar {
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+    margin-bottom: 15px;
+    font-weight: 700;
+    font-size: 22px;
+  }
+  .title-bar .url {
+    font-size: 12px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ---------- Client Info Grid ---------- */
+  .client-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 20px;
+    margin-bottom: 15px;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .info-row {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .info-row label {
+    width: 90px;
+    font-weight: 600;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .info-row input {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 2px 5px;
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+    background: transparent;
+  }
+  .info-row input:focus { border-bottom-color: var(--primary); }
+
+  .right-box {
+    background: var(--light-bg);
+    padding: 10px;
+    border-radius: 4px;
+  }
+  .right-box .info-row label { width: 80px; }
+  .right-box .info-row input { background: #fff; border: 1px solid var(--border); border-radius: 3px; padding: 3px 6px; }
+  .right-box .info-row input:focus { border-color: var(--primary); }
+
+  /* ---------- Items Table ---------- */
+  .items-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 15px;
+    font-size: 12px;
+  }
+  table.items th {
+    background: var(--primary);
+    color: #fff;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  table.items th.num { text-align: right; }
+  table.items td {
+    border: 1px solid #d0dce8;
+    padding: 5px 8px;
+    vertical-align: middle;
+  }
+  table.items tr:nth-child(even) td { background: #f9fbfd; }
+  table.items td input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    outline: none;
+    padding: 2px 0;
+  }
+  table.items td input:focus { background: #eef4fa; }
+  table.items td.num input { text-align: right; }
+  .amount { text-align: right; font-weight: 600; white-space: nowrap; }
+  .del-btn {
+    border: none;
+    background: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    display: none;
+  }
+  .del-btn:hover { color: #e5484d; }
+  tr:hover .del-btn { display: inline; }
+
+  /* ---------- Total Section ---------- */
+  .total-bar {
+    background: var(--primary);
+    color: #fff;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    font-weight: 700;
+    font-size: 18px;
+    gap: 20px;
+  }
+  .total-bar .label { letter-spacing: 1px; }
+  .total-bar .value {
+    background: #fff;
+    color: var(--primary);
+    padding: 4px 15px;
+    min-width: 120px;
+    text-align: right;
+    border-radius: 3px;
+    font-size: 18px;
+  }
+  .total-bar .value input {
+    border: none;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    font-weight: 700;
+    text-align: right;
+    width: 100%;
+    outline: none;
+  }
+
+  /* ---------- Bottom Info ---------- */
+  .bottom-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    margin-bottom: 15px;
+  }
+  .bottom-info .info-row label { width: 80px; font-size: 12px; }
+  .bottom-info .info-row input { font-size: 12px; }
+
+  /* ---------- Terms & Signature ---------- */
+  .terms-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .terms-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .terms-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+  }
+  .terms-list li {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 4px;
+    font-size: 12px;
+  }
+  .terms-list li::before {
+    content: "•";
+    color: var(--primary);
+    font-weight: bold;
+    margin-right: 8px;
+  }
+  .terms-list li input {
+    flex: 1;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 2px 0;
+    font: inherit;
+    font-size: 12px;
+    outline: none;
+    background: transparent;
+  }
+  .terms-list li input:focus { border-bottom-color: var(--primary); }
+
+  .thank-you {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 10px;
+  }
+  .signature-area {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+    font-style: italic;
+    border-bottom: 2px solid var(--primary);
+    display: inline-block;
+    padding-bottom: 2px;
+    margin-bottom: 5px;
+  }
+  .signature-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 1px;
+  }
+
+  /* ---------- Background Art (Ship & Globe) ---------- */
+  .bg-art {
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    width: 60%;
+    height: 180px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.8;
+  }
+  .bg-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: bottom right;
+  }
+
+  /* ---------- Footer ---------- */
+  .footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--primary);
+    color: #fff;
+    padding: 8px 18mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    z-index: 10;
+  }
+  .footer-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .footer-item img { width: 16px; height: 16px; filter: brightness(0) invert(1); }
+
+  /* ---------- Print ---------- */
+  @page { size: A4; margin: 0; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none !important; }
+    .sheet {
+      width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      box-shadow: none;
+      padding: 15mm 18mm 20mm 18mm;
+    }
+    .bg-art { opacity: 1; }
+    .del-btn { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn" id="addRow" type="button">+ Satır Ekle</button>
+  <button class="btn primary" id="print" type="button">Print / Save PDF</button>
+</div>
+
+<div class="sheet">
+
+  <!-- Header -->
+  <div class="header-top">
+    <div class="header-left">
+      <div class="logo-placeholder">
+        <!-- Replace with your logo -->
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'; this.parentElement.innerText='LOGO'">
+      </div>
+      <div>
+        <div class="company-name">SWIFTSHIP-CARGO</div>
+        <div class="company-sub">HIZLI • GÜVENLİ • GLOBAL</div>
+      </div>
+    </div>
+    <div class="header-slogan">
+      Yükünüz<br>Bizim Önceliğimiz.
+    </div>
+  </div>
+
+  <!-- Title Bar -->
+  <div class="title-bar">
+    <span>FATURA</span>
+    <span class="url">
+      <!-- Replace with your globe icon -->
+      <img src="globe.png" alt="Globe" width="20" height="20" style="filter: brightness(0) invert(1);" onerror="this.style.display='none'">
+      https://swiftship-roan.vercel.app/
+    </span>
+  </div>
+
+  <!-- Client & Invoice Details -->
+  <div class="client-grid">
+    <div>
+      <div class="section-title">
+        <span>👤</span> Alıcı / Fatura Sahibi
+      </div>
+      <div class="info-row">
+        <label>Adı Soyadı:</label>
+        <input type="text" placeholder="Müşteri Adı Soyadı">
+      </div>
+      <div class="info-row">
+        <label>Adres:</label>
+        <input type="text" placeholder="Müşteri Adresi">
+      </div>
+      <div class="info-row">
+        <label>Telefon:</label>
+        <input type="text" placeholder="Telefon Numarası">
+      </div>
+    </div>
+    <div class="right-box">
+      <div class="section-title">
+        <span>📄</span> Fatura Bilgileri
+      </div>
+      <div class="info-row">
+        <label>Fatura No.:</label>
+        <input type="text" value="INV-0001">
+      </div>
+      <div class="info-row">
+        <label>Fatura Tarihi:</label>
+        <input type="date" id="invoiceDate">
+      </div>
+      <div class="info-row">
+        <label>Teslim Tarihi:</label>
+        <input type="date" id="deliveryDate">
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <div class="items-title">
+    <span>📦</span> Paket İçeriği ve Değerleri
+  </div>
+  <table class="items" id="itemsTable">
+    <thead>
+      <tr>
+        <th style="width: 50px;">No.</th>
+        <th>Açıklama</th>
+        <th class="num" style="width: 80px;">Miktar</th>
+        <th class="num" style="width: 100px;">Birim Fiyat</th>
+        <th class="num" style="width: 110px;">Toplam</th>
+        <th style="width: 30px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows generated by JS -->
+    </tbody>
+  </table>
+
+  <!-- Total -->
+  <div class="total-bar">
+    <span class="label">TOPLAM TUTAR</span>
+    <span class="value">
+      ₺ <input type="text" id="grandTotal" value="0.00" readonly>
+    </span>
+  </div>
+
+  <!-- Bottom Info -->
+  <div class="bottom-info">
+    <div class="info-row">
+      <label>Para Birimi:</label>
+      <input type="text" value="TRY (₺)" placeholder="Para Birimi">
+    </div>
+    <div class="info-row">
+      <label>Gönderici:</label>
+      <input type="text" placeholder="Gönderici Adı">
+    </div>
+  </div>
+
+  <!-- Terms & Signature -->
+  <div class="terms-section">
+    <div class="terms-title">
+      <span>📋</span> Genel Şartlar ve Koşullar
+    </div>
+    <ul class="terms-list">
+      <li><input type="text" placeholder="Şart 1"></li>
+      <li><input type="text" placeholder="Şart 2"></li>
+      <li><input type="text" placeholder="Şart 3"></li>
+      <li><input type="text" placeholder="Şart 4"></li>
+      <li><input type="text" placeholder="Şart 5"></li>
+    </ul>
+
+    <div class="thank-you">Swiftship-Cargo'ya duyduğunuz güven için teşekkür ederiz.</div>
+    <div class="signature-area">Swiftship-Cargo</div>
+    <div class="signature-name">SWIFTSHIP-CARGO</div>
+  </div>
+
+  <!-- Background Art (Ship & Globe) -->
+  <div class="bg-art">
+    <!-- Replace with your ship/globe image -->
+    <img src="ship.png" alt="Ship" onerror="this.style.display='none'">
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-item">
+      <img src="globe.png" alt="Globe" onerror="this.style.display='none'">
+      www.swiftship-roan.vercel.app
+    </div>
+    <div class="footer-item">
+      <img src="shield.png" alt="Shield" onerror="this.style.display='none'">
+      Güvenli | Global
+    </div>
+    <div class="footer-item">
+      <img src="ship-icon.png" alt="Ship" onerror="this.style.display='none'">
+      Swiftship-Cargo
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tbody = document.querySelector('#itemsTable tbody');
+  const grandTotalInput = document.getElementById('grandTotal');
+
+  // Format currency
+  const formatMoney = (amount) => {
+    return amount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  // Calculate row total and grand total
+  function recalc() {
+    let grandTotal = 0;
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach((tr, index) => {
+      // Update row number
+      tr.querySelector('.row-num').innerText = index + 1;
+
+      const qty = parseFloat(tr.querySelector('.qty').value) || 0;
+      const price = parseFloat(tr.querySelector('.price').value) || 0;
+      const total = qty * price;
+
+      tr.querySelector('.amount').innerText = formatMoney(total);
+      grandTotal += total;
+    });
+    grandTotalInput.value = formatMoney(grandTotal);
+  }
+
+  // Add a new row
+  function addRow() {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num" style="text-align:center; font-weight:600;">1</td>
+      <td><input type="text" class="desc" placeholder="Ürün / Hizmet açıklaması"></td>
+      <td class="num"><input type="number" class="qty" value="1" min="0" step="1"></td>
+      <td class="num"><input type="number" class="price" value="0.00" min="0" step="0.01"></td>
+      <td class="amount">0,00</td>
+      <td style="text-align:center;"><button class="del-btn" type="button" title="Sil">&times;</button></td>
+    `;
+    tbody.appendChild(tr);
+
+    // Add event listeners to new inputs
+    tr.querySelectorAll('input').forEach(input => {
+      input.addEventListener('input', recalc);
+    });
+
+    // Delete button logic
+    tr.querySelector('.del-btn').addEventListener('click', () => {
+      if (tbody.rows.length > 1) {
+        tr.remove();
+        recalc();
+      } else {
+        // Clear the last row instead of deleting
+        tr.querySelector('.desc').value = '';
+        tr.querySelector('.qty').value = '1';
+        tr.querySelector('.price').value = '0.00';
+        recalc();
+      }
+    });
+
+    recalc();
+  }
+
+  // Initialize with 5 empty rows (as shown in the image)
+  for (let i = 0; i < 5; i++) {
+    addRow();
+  }
+
+  // Add row button
+  document.getElementById('addRow').addEventListener('click', addRow);
+
+  // Print button
+  document.getElementById('print').addEventListener('click', () => window.print());
+
+  // Set default dates
+  const today = new Date();
+  const delivery = new Date(today);
+  delivery.setDate(delivery.getDate() + 3);
+
+  const toISO = (d) => d.toISOString().split('T')[0];
+  document.getElementById('invoiceDate').value = toISO(today);
+  document.getElementById('deliveryDate').value = toISO(delivery);
+</script>
+
+</body>
+</html>
