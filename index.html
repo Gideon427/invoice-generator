@@ -295,7 +295,13 @@
     text-align: center;
     width: 150px;
   }
-  .signature img { max-width: 100%; height: 60px; object-fit: contain; }
+  
+  /* Signature Image styling */
+  .signature img { 
+    max-width: 100%; 
+    height: 60px; 
+    object-fit: contain; 
+  }
 
   /* Bottom Decorative Wave */
   .bottom-wave {
@@ -393,6 +399,7 @@
   <div class="header">
     <div class="header-left">
       <div class="logo-box">
+        <!-- LOGO IMAGE: Make sure your logo is named logo.png -->
         <img src="logo.png" alt="Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'60\'><text x=\'50%\' y=\'50%\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'14\' font-weight=\'bold\' fill=\'%23ffffff\'>SWIFT</text></svg>'">
       </div>
       <div class="company-info">
@@ -453,7 +460,6 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Initial 5 Rows -->
         <tr>
           <td><input type="text" value="Giyim"></td>
           <td class="center"><input type="number" value="6" min="0" class="qty"></td>
@@ -516,8 +522,12 @@
         <hr>
         <textarea data-tr-placeholder="Tüm ödemeler teslimattan önce yapılmalı ve tamamen tamamlanmalıdır. Lütfen ödeme yapmadan önce ödeme detaylarını kontrol ediniz." data-en-placeholder="All payments must be made and fully completed before delivery. Please check the payment details before making a payment.">Tüm ödemeler teslimattan önce yapılmalı ve tamamen tamamlanmalıdır. Lütfen ödeme yapmadan önce ödeme detaylarını kontrol ediniz.</textarea>
       </div>
+      
       <div class="signature">
-        <img src="signature.png" alt="İmza" onerror="this.style.display='none'">
+        <!-- SIGNATURE IMAGE: Make sure your image is named signature.png -->
+        <img src="signature.png" alt="İmza" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <!-- This placeholder shows only if signature.png is missing -->
+        <div style="display:none; border: 1px dashed #b0c4de; padding: 10px; font-size: 12px; color: #888;">İmza / Signature</div>
       </div>
     </div>
   </div>
@@ -574,12 +584,10 @@
 
   function deleteRow(btn) {
     const tr = btn.closest('tr');
-    // Only delete if there is more than 1 row
     if (tableBody.querySelectorAll('tr').length > 1) {
       tr.remove();
       calculateTotals();
     } else {
-      // If it's the last row, just clear the inputs instead of deleting
       tr.querySelectorAll('input').forEach(input => input.value = '');
       tr.querySelector('.qty').value = '1';
       tr.querySelector('.price').value = '0.00';
@@ -605,14 +613,12 @@
     document.getElementById('grandTotal').innerText = formattedTotal;
   }
 
-  // Event listener for inputs (works for dynamically added rows too)
   tableBody.addEventListener('input', (e) => {
     if (e.target.classList.contains('qty') || e.target.classList.contains('price')) {
       calculateTotals();
     }
   });
 
-  // Initialize calculation on load
   calculateTotals();
 </script>
 
